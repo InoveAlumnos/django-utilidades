@@ -210,10 +210,15 @@ class TestLogAPIView(APIView):
         el servidor entregara un log de nivel 'info' y posteriormente lanzará una excepción,
         que se registrará con un log de 'error'.
         '''
+        # Llamamos al logger del servidor:
         logger = logging.getLogger('django.server')
         try:
+            # Registramos un mensaje con nivel de INFO:
             logger.info('Test API logger')
+            # Lanzamos una excepción:
             raise ValueError('Ha ocurrido algo grave. . .')
         except Exception as error:
+            # Registramos el error generado en nuestro log de eventos de requests:
             logger.error(error)
+            # Retornamos el mensaje del error en el Response:
             return Response({'error': f'{error}'})
