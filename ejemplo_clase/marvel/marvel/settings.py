@@ -59,7 +59,6 @@ REST_FRAMEWORK = {
 }
 
 
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -76,7 +75,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         # NOTE: Agregamos el directorio para los templates, necesario para Swagger
-        'DIRS': [os.path.join(BASE_DIR,'templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         # 'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -99,9 +98,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'marvel_db',        # POSTGRES_DB
-        'USER' : 'inove_user',      # POSTGRES_USER
-        'PASSWORD' : '123Marvel!',  # POSTGRES_PASSWORD
-        'HOST':'db',                # Nombre del servicio
+        'USER': 'inove_user',      # POSTGRES_USER
+        'PASSWORD': '123Marvel!',  # POSTGRES_PASSWORD
+        'HOST': 'db',                # Nombre del servicio
         'PORT': '5432'              # Número del puerto
     }
 }
@@ -130,7 +129,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'es'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Argentina/Buenos_Aires'
+# TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
@@ -168,4 +168,165 @@ VERDE = "\033[;32m"
 LOGIN_REDIRECT_URL = '/e-commerce/index'
 LOGIN_URL = '/e-commerce/'
 
+# NOTE: Logging settings
 
+LOGGING_DIR = f'{BASE_DIR}/marvel/logs/'
+
+SIMPLE_LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'generic': {
+            'format': '[%(asctime)s] |%(levelname)s| %(message)s',
+            'datefmt': "%d/%b/%Y %H:%M:%S",
+            'style': '%'
+        }
+    },
+    'handlers': {
+        'general': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOGGING_DIR, 'general.log'),
+            'formatter': 'generic'
+        }
+    },
+    'loggers': {
+        # django: registra todos los logs
+        'django': {
+            'handlers': ['general'],
+            'propagate': True,
+            'level': 'DEBUG',
+        }
+    }
+}
+
+COMPLEX_LOGGING = {
+    # NOTE: Establecemos la versión:
+    'version': 1,
+    # NOTE: Mantenemos el resto de los loggers:
+    'disable_existing_loggers': False,
+    # NOTE: Generamos filtros de estado de debug:
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    # NOTE: Diseñamos formateadores para los mensajes:
+    'formatters': {
+        'verbose': {
+            'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt': "%d/%b/%Y %H:%M:%S"
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+        'time': {
+            'format': '[%(asctime)s] |%(levelname)s| %(message)s'
+        },
+        'generic': {
+            'format': '[%(asctime)s] |%(levelname)s| %(message)s',
+            'datefmt': "%d/%b/%Y %H:%M:%S",
+            'style': '%'
+        }
+
+    },
+    # NOTE: Generamos manejadores para los distintos tipos de mensajes:
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'level': 'DEBUG',
+            'formatter': 'generic'
+        },
+        # general: Para registrar todos los mensajes.
+        'general': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOGGING_DIR, 'general.log'),
+            'formatter': 'generic'
+        },
+        # requests: para los mensajes del servidor:
+        'requests': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOGGING_DIR, 'requests.log'),
+            'formatter': 'time',
+        },
+        # site: Para registrar los errores en el render de las variables de los templates.
+        'site': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOGGING_DIR, 'template-rendering.log'),
+            'formatter': 'time',
+        },
+        # database: Registra las consultas en la base de datos [solo para debug]
+        'database': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOGGING_DIR, 'database.log'),
+            'formatter': 'time',
+        },
+        # security: registra las operaciones sospechosas.
+        'security': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOGGING_DIR, 'security.log'),
+            'formatter': 'time',
+        },
+        # generalbatch: Para registrar todos los mensajes, pero limita los logs a 15MB
+        # Luego, fracciona el log en 10 partes segun backupCount.
+        'generalbatch': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(LOGGING_DIR, 'general-batch.log'),
+            'maxBytes': 1024*1024*15,  # 15MB
+            # 'maxBytes': 1024,
+            'backupCount': 10,
+            'formatter': 'generic',
+        },
+    },
+    # NOTE: Ahora establecemos los loggers:
+    'loggers': {
+        # django: registra todos los logs
+        # 'django': {
+        #     'handlers': ['general', 'console'],
+        #     'propagate': True,
+        #     'level': 'DEBUG',
+        # },
+        # django.server: filtra los mensajes del servidor
+        'django.server': {
+            'handlers': ['requests', 'console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        # django.template: para los mensajes de renderizado de templates
+        'django.template': {
+            'handlers': ['site'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        # django.db.backends: registra las querys a la base de datos
+        'django.db.backends': {
+            'handlers': ['database'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        # django.security.csrf: registra errores csrf en formularios.
+        'django.security.csrf': {
+            'handlers': ['security'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        # django: registra todos los logs, pero en hasta 10 lotes de 15MB
+        'django': {
+            'handlers': ['generalbatch'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    }
+}
+
+# NOTE: Ejemplo de aplicación en API Test logging.
+LOGGING = SIMPLE_LOGGING # COMPLEX_LOGGING

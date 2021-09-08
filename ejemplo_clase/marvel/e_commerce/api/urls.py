@@ -22,5 +22,7 @@ urlpatterns = [
     # TODO: Wish-list API View
     path('Wish/get', GetWishListAPIView.as_view()),
     path('Wish/post', PostWishListAPIView.as_view()),
+    # TODO: Test API Logging:
+    path('test-logging', TestLogAPIView.as_view()),
 
 ]

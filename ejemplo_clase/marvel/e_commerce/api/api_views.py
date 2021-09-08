@@ -3,7 +3,7 @@ from e_commerce.api.serializers import *
 
 # Segundo, importamos los modelos:
 from django.contrib.auth.models import User
-from e_commerce.models import Comic,WishList
+from e_commerce.models import Comic, WishList
 
 # Luego importamos las herramientas para crear las api views con Django REST FRAMEWORK:
 
@@ -36,6 +36,8 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.parsers import JSONParser
+# Importamos logging para registrar los eventos
+import logging
 
 mensaje_headder = '''
 Ejemplo de header:
@@ -48,6 +50,7 @@ Ejemplo de header:
 }`
 '''
 
+
 class GetComicAPIView(ListAPIView):
     __doc__ = f'''{mensaje_headder}
     `[METODO GET]`
@@ -56,6 +59,7 @@ class GetComicAPIView(ListAPIView):
     queryset = Comic.objects.all()
     serializer_class = ComicSerializer
     permission_classes = [IsAuthenticated, IsAdminUser]
+
 
 class PostComicAPIView(CreateAPIView):
     __doc__ = f'''{mensaje_headder}
@@ -66,6 +70,7 @@ class PostComicAPIView(CreateAPIView):
     serializer_class = ComicSerializer
     permission_classes = [IsAuthenticated, IsAdminUser]
 
+
 class ListCreateComicAPIView(ListCreateAPIView):
     __doc__ = f'''{mensaje_headder}
     `[METODO GET-POST]`
@@ -75,6 +80,7 @@ class ListCreateComicAPIView(ListCreateAPIView):
     queryset = Comic.objects.all()
     serializer_class = ComicSerializer
     permission_classes = [IsAuthenticated, IsAdminUser]
+
 
 class RetrieveUpdateComicAPIView(RetrieveUpdateAPIView):
     __doc__ = f'''{mensaje_headder}
@@ -95,6 +101,7 @@ class DestroyComicAPIView(DestroyAPIView):
     serializer_class = ComicSerializer
     permission_classes = [IsAuthenticated, IsAdminUser]
 
+
 class LoginUserAPIView(APIView):
     '''
     Vista de API personalizada para recibir peticiones de tipo POST.
@@ -107,7 +114,7 @@ class LoginUserAPIView(APIView):
     authentication_classes = []
     permission_classes = []
 
-    def post(self, request,format=None):
+    def post(self, request, format=None):
         '''
         Esta función sobrescribe la función post original de esta clase,
         recibe "request" y hay que setear format=None, para poder recibir los datos en request.data 
@@ -140,9 +147,9 @@ class LoginUserAPIView(APIView):
                 user_data['username'] = username
                 user_data['first_name'] = account.first_name
                 user_data['last_name'] = account.first_name
-                user_data['email']=account.email
+                user_data['email'] = account.email
                 user_data['is_active'] = account.is_active
-                user_data['token'] = token.key                
+                user_data['token'] = token.key
                 # Devolvemos la respuesta personalizada
                 return Response(user_data)
             else:
@@ -160,6 +167,7 @@ class LoginUserAPIView(APIView):
 # TODO: Agregar las vistas genericas que permitan realizar un CRUD del modelo de wish-list.
 # TODO: Crear una vista generica modificada para traer todos los comics que tiene un usuario.
 
+
 class GetWishListAPIView(ListAPIView):
     __doc__ = f'''{mensaje_headder}
     `[METODO GET]`
@@ -169,6 +177,7 @@ class GetWishListAPIView(ListAPIView):
     serializer_class = WishListSerializer
     permission_classes = [IsAuthenticated, IsAdminUser]
 
+
 class PostWishListAPIView(CreateAPIView):
     __doc__ = f'''{mensaje_headder}
     `[METODO POST]`
@@ -177,3 +186,34 @@ class PostWishListAPIView(CreateAPIView):
     queryset = WishList.objects.all()
     serializer_class = WishListSerializer
     permission_classes = []
+
+
+class TestLogAPIView(APIView):
+    '''
+    Vista de API personalizada para recibir peticiones de tipo POST.
+    Esquema de entrada:
+    {"username":"root", "password":12345}
+    
+    Utilizaremos JSONParser para tener  'Content-Type': 'application/json'.
+    
+    API para probar el logg de errores en una request, al ejecutar el POST
+    el servidor entregara un log de nivel 'info' y posteriormente lanzará una excepción,
+    que se registrará con un log de 'error'.
+    '''
+    parser_classes = [JSONParser]
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request, format=None):
+        '''
+        API para probar el logg de errores en una request, al ejecutar el POST
+        el servidor entregara un log de nivel 'info' y posteriormente lanzará una excepción,
+        que se registrará con un log de 'error'.
+        '''
+        logger = logging.getLogger('django.server')
+        try:
+            logger.info('Test API logger')
+            raise ValueError('Ha ocurrido algo grave. . .')
+        except Exception as error:
+            logger.error(error)
+            return Response({'error': f'{error}'})
