@@ -40,9 +40,9 @@ services:
     # build es el lugar desde donde toma los archivos para generar la imagen.
     build: .
     # Imágen a utilizar:
-    image: modulo_7
+    image: modulo_9
     # Nombre del container:
-    container_name: modulo_7
+    container_name: modulo_9
     # Comportamiento ante fallos y al iniciar el sistema:
     restart: always
     # Carpetas enlazadas:

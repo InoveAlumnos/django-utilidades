@@ -63,7 +63,7 @@ def register(request):
         form = UserForm(request.POST)
         # Luego, utilizamos el método que viene en en la clase UserCreationForm
         # para validar los datos del formulario: 
-        [print(VERDE+'',item) for item in form] # NOTE: Imprimimos para ver el contenido del formulario COMPLETO
+        # [print(VERDE+'',item) for item in form] # NOTE: Imprimimos para ver el contenido del formulario COMPLETO
         if form.is_valid():
             # Si los datos son validos, el formulario guarda los datos en la base de datos.
             # Al heredar de UserCreationForm, aplica las codificaciónes en el password y todo
@@ -78,7 +78,7 @@ def register(request):
         form = UserForm()
     # Si los datos del POST son invalidos o si el método es distinto a POST
     # retornamos el render de la página de registro, con el formulario de registro en el contexto.
-    [print(AMARILLO+'',item) for item in form] # NOTE: Imprimimos para ver el contenido del formulario vacío
+    # [print(AMARILLO+'',item) for item in form] # NOTE: Imprimimos para ver el contenido del formulario vacío
     return render(request, 'e-commerce/signup.html', {'form': form})
 
 class IndexView(ListView):
