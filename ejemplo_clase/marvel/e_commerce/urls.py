@@ -41,5 +41,8 @@ urlpatterns = [
     # NOTE: Ejemplos de Bootstrap HTML:
     path('bootstrap-login', BootstrapLoginUserView.as_view(), name='loginbootstrap'),
     path('bootstrap-signup', BootstrapSignupView.as_view(), name='signupbootstrap'),
+    # NOTE: Ejemplos de Plotly en HTML:
+    path('graph', GraphView.as_view(), name='graph'),
+
 ]
 urlpatterns += INDEX_PATTERNS

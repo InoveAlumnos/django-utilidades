@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from pathlib import Path
 # NOTE: Importamos os para indicar el directorio de templates y otras utilidades:
 import os
+# Importamos Celery para el manejo de tareas asincrónicas:
+from celery.schedules import crontab
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -153,16 +156,13 @@ STATICFILES_DIRS = (str(BASE_DIR.joinpath('staticfiles')),)
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
 # NOTE: Para debug
-
 # Color en los prints:
 # Modo de uso: print(VERDE+"mi texto")
 
 AMARILLO = "\033[;33m"
 CIAN = "\033[;36m"
 VERDE = "\033[;32m"
-
 
 # NOTE: Para manejo de sesión.
 LOGIN_REDIRECT_URL = '/e-commerce/index'
@@ -330,3 +330,22 @@ COMPLEX_LOGGING = {
 
 # NOTE: Ejemplo de aplicación en API Test logging.
 LOGGING = SIMPLE_LOGGING # COMPLEX_LOGGING
+
+CELERY_BROKER_URL = 'redis://redis:6379'
+CELERY_RESULT_BACKEND = 'redis://redis:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'America/Argentina/Buenos_Aires'
+
+CELERY_BEAT_SCHEDULE = {
+    'hello': {
+        'task': 'e_commerce.tasks.hello_world',
+        'schedule': crontab(minute='*/2')  # Cada 2 minutos ejecutar
+    },
+    'segunda_tarea': {
+        'task': 'e_commerce.tasks.segunda_tarea',
+        'schedule': crontab(minute='*/1')  # Cada 60 minutos ejecutar
+    }
+}
+

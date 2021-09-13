@@ -79,8 +79,7 @@ class PruebaDeAPIs(TestCase):
         '''
 
         # NOTE: Creamos un superusuario para las pruebas:
-        self.user = User.objects.create_superuser(
-            self.username, self.email, self.password)
+        self.user = User.objects.create_superuser(self.username, self.email, self.password)
         # Ahora lo autenticamos en el servidor de pruebas:
         self.client.login(username=self.username, password=self.password)
 
@@ -112,7 +111,7 @@ class PruebaDeAPIs(TestCase):
 
         # GET test:
         resp = self.client.get(endpoint)
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 200) 
 
         # POST test:
         resp = self.client.post(

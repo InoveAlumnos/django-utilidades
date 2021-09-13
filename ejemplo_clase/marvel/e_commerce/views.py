@@ -15,6 +15,10 @@ from django.contrib.auth.forms import UserCreationForm
 
 # Utilidades:
 from marvel.settings import VERDE, AMARILLO
+# Para graficar:
+import plotly.graph_objs as go
+from plotly.offline import plot
+
 
 # NOTE: Páginas del sitio **********************************************************
 
@@ -97,7 +101,7 @@ class IndexView(ListView):
     # NOTE: Examinamos qué incluye nuestro contexto:
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        [print(AMARILLO+f'{element}\n') for element in context.items()]
+        # [print(AMARILLO+f'{element}\n') for element in context.items()]
         return context
 
 
@@ -138,7 +142,7 @@ def check_button(request):
     Esta función tiene como objetivo el cambio de estado de los botones de favoritos y carrito.
     '''
     if request.method == 'POST':
-        print(request.path)
+        # print(request.path)
         # NOTE: Obtenemos los datos necesarios:
         username = request.POST.get('username')
         marvel_id = request.POST.get('marvel_id')
@@ -170,10 +174,10 @@ def check_button(request):
             if type_button == "cart":
                 wish_obj.cart = not actual_value
                 wish_obj.save()
-                print('wish_obj.cart :', wish_obj.cart)
+                # print('wish_obj.cart :', wish_obj.cart)
             elif type_button == "favorite":
                 wish_obj.favorite = not actual_value
-                print('wish_obj.favorite :', wish_obj.favorite)
+                # print('wish_obj.favorite :', wish_obj.favorite)
                 wish_obj.save()
             else:
                 pass
@@ -212,7 +216,7 @@ class CartView(TemplateView):
         cart_items = [obj.comic_id for obj in wish_obj]
         context['cart_items'] = cart_items
         context['total_price'] = round((sum([float(comic.price) for comic in cart_items])), 2)
-        print(context['cart_items'])
+        # print(context['cart_items'])
         return context
 
 
@@ -234,7 +238,7 @@ class WishView(TemplateView):
         wish_obj = WishList.objects.filter(user_id=user_obj, favorite=True)
         cart_items = [obj.comic_id for obj in wish_obj]
         context['fav_items'] = cart_items
-        print(context['fav_items'])
+        # print(context['fav_items'])
         return context
 
 
@@ -280,3 +284,46 @@ class BootstrapSignupView(TemplateView):
     Vista para Template de registro de usuario con estilo de bootstrap.
     '''
     template_name = 'e-commerce/bootstrap-signup.html'
+
+class GraphView(TemplateView):
+    '''
+    Vista para Template de registro de usuario con estilo de bootstrap.
+    '''
+    template_name = 'e-commerce/graph.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Obtenemos la lista de comics:
+        comics = Comic.objects.all()
+
+        # Obtenemos los titulos y precios en dos listas:
+        titles = [comic.title for comic in comics]
+        prices = [comic.price for comic in comics]
+
+        # Gráfico scatter tipo bar (idem plt.bar)
+        # Le pasamos como parámetros de X e Y los títulos y precios:
+        trace1 = go.Bar(
+            x=titles,
+            y=prices,
+            name='ploty bar',
+            orientation='v',
+        )
+        data = [trace1]
+        layout = go.Layout(
+            xaxis=dict(
+                autorange=True,
+                linewidth=3,
+                categoryorder='total descending',
+                rangeslider=dict(visible=True),
+            ),
+            yaxis=dict(
+                autorange=True,
+                linewidth=3,
+            ),
+            template='plotly_dark',
+            showlegend=True
+        )
+        fig = go.Figure(data=data, layout=layout)
+        plot_div = plot(fig, output_type='div', include_plotlyjs=True)
+        context['graph'] = plot_div
+        return context
