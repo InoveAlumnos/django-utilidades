@@ -345,7 +345,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     'segunda_tarea': {
         'task': 'e_commerce.tasks.segunda_tarea',
-        'schedule': crontab(minute='*/1')  # Cada 60 minutos ejecutar
+        'schedule': crontab(minute='*/60')  # Cada 60 minutos ejecutar
     }
 }
 
