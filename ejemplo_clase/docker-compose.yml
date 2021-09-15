@@ -22,17 +22,6 @@ services:
       # Enlazamos el puerto en el que trabaja Postgres, por defecto el 5432
       - 5432:5432
 
-  # adminer:
-  #   # Una interfaz para monitoreo y gestión de nuestra base de datos.
-  #   # Se puede acceder a ella en localhost:8080
-  #   container_name: marvel_adminer
-  #   image: adminer:4.8.0
-  #   restart: always
-  #   ports:
-  #     - 8080:8080
-  #   # depends_on indica que este servicio depende de que primero inicie "db"
-  #   depends_on: ["db"]
-
   modulo_9:
     # build es el lugar desde donde toma los archivos para generar la imagen.
     build: .
@@ -51,8 +40,6 @@ services:
     # Puertos enlazados:
     ports:
         - "8000:8000"
-        # - "8080:8080"
-
     # Control de consola:
     stdin_open: true
     tty: true
@@ -69,6 +56,7 @@ services:
     depends_on:
       - db
 
+  # Celery-worker para ejecutar las tareas (funciones) que definimos en nuestro código:
   celery:
     build: .
     command: bash -c "cd marvel && celery --app marvel worker -l info"
@@ -80,6 +68,7 @@ services:
     depends_on:
       - redis
 
+  # Celery-beat para organizar la
   celery-beat:
     build: .
     container_name: celery_beat
