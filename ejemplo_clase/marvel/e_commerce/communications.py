@@ -1,3 +1,4 @@
+import logging
 from smtplib import SMTPException
 
 from django.core.mail import send_mail
@@ -9,6 +10,7 @@ class SendCommunication:
 
     @classmethod
     def send_mail(cls, subject, message, recipient_list):
+        logger = logging.getLogger('django.server')
         try:
             mail_result = send_mail(
                 from_email=settings.DEFAULT_FROM_EMAIL,
@@ -17,6 +19,7 @@ class SendCommunication:
                 recipient_list=recipient_list,
                 fail_silently=False,
             )
-            print(mail_result)
+            logger.info('----SENDING MAIL-----')
+            logger.info(mail_result)
         except SMTPException as e:
-            print(e)
+            logger.error(e)
