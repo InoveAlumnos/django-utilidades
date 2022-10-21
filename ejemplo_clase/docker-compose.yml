@@ -37,13 +37,18 @@ services:
       - type: bind
         source: .
         target: /opt/back_end
+      # Con esto bindeamos internamente la carpeta "envs" pero sin su contenido.
+      - /opt/back_end/envs
+    # Cargo todas las variables de entorno contenidas en los archivos .env
+    env_file:
+      - ./envs/email.env
     # Puertos enlazados:
     ports:
         - "8000:8000"
     # Control de consola:
     stdin_open: true
     tty: true
-    command: python marvel/manage.py runserver 0.0.0.0:8000
+    command: bash -c "[-d marvel/logs] || mkdir marvel/logs ; python manage.py runserver 0.0.0.0:8000"
     depends_on:
       - db
 
@@ -59,7 +64,7 @@ services:
   # Celery-worker para ejecutar las tareas (funciones) que definimos en nuestro código:
   celery:
     build: .
-    command: bash -c "cd marvel && celery --app marvel worker -l info"
+    command: bash -c "celery --app marvel worker -l info"
     container_name: celery
     volumes:
       - type: bind
@@ -68,11 +73,11 @@ services:
     depends_on:
       - redis
 
-  # Celery-beat para organizar la
+  # Celery-beat para organizar las tareas periódicas que definamos en nuestro código.
   celery-beat:
     build: .
     container_name: celery_beat
-    command: bash -c "cd marvel && celery --app marvel beat -l info"
+    command: bash -c "celery --app marvel beat -l info"
     volumes:
       - type: bind
         source: .
