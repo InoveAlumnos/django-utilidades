@@ -9,7 +9,7 @@ from django.conf import settings
 class SendCommunication:
 
     @classmethod
-    def send_mail(cls, subject, message, recipient_list):
+    def send_email(cls, subject, message, recipient_list):
         logger = logging.getLogger('django.server')
         try:
             mail_result = send_mail(
