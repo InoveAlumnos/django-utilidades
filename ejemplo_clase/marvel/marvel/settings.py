@@ -30,24 +30,55 @@ SECRET_KEY = 'django-insecure-$dpguq$#6!6dw($(qd6))7qcw%%#a=sc!-!7t!_av9%5*(q=uf
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+CORS_ORIGIN_ALLOW_ALL = True
 ALLOWED_HOSTS = ['*']
+CORS_ALLOWED_ORIGINS = ["http://localhost:3000"]
 
 
 # Application definition
 
-INSTALLED_APPS = [
+# Apps que se agregan automáticamente al crear un proyecto en Django.
+BASE_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Local apps: Acá ponemos el nombre de las carpetas de nuestras aplicaciones
-    'e_commerce',
-    # Third party apps: acá vamos agregando las aplicaciones de terceros, extensiones de Django.
+]
+
+# Acá van las apps de 3ros que necesitamos agregar para que Django las encuentre.
+THIRD_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
+    'drf_yasg',
+    'django_filters',
+    'corsheaders',
 ]
+
+# Acá van las apps que creamos nosotros.
+LOCAL_APPS = [
+    'e_commerce',
+]
+
+INSTALLED_APPS = BASE_APPS + THIRD_APPS + LOCAL_APPS
+
+# INSTALLED_APPS = [
+#     'django.contrib.admin',
+#     'django.contrib.auth',
+#     'django.contrib.contenttypes',
+#     'django.contrib.sessions',
+#     'django.contrib.messages',
+#     'django.contrib.staticfiles',
+#     # Local apps: Acá ponemos el nombre de las carpetas de nuestras aplicaciones
+#     'e_commerce',
+#     # Third party apps: acá vamos agregando las aplicaciones de terceros, extensiones de Django.
+#     'rest_framework',
+#     'rest_framework.authtoken',
+#     'drf_yasg',
+#     'django_filters'
+# ]
+
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -58,13 +89,20 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
-    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    # Indicamos el tipo de paginado, y la cantidad de resultados a mostrar por página.
+    # Ahora nuestras vistas genéricas van a tener paginado utilizando la clase
+    # "PageNumberPagination".
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10
 }
+
 
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -97,13 +135,26 @@ WSGI_APPLICATION = 'marvel.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+# NOTE: Reemplazamos la configuración inicial de base de datos para trabajar con Postgres:
+# Recordemos:
+    #   POSTGRES_DB: marvel_db
+    #   POSTGRES_USER: inove_user
+    #   POSTGRES_PASSWORD: 123Marvel!
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        # 'ENGINE': 'django.db.backends.postgresql_psycopg2' --> En desuso.
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'marvel_db',        # POSTGRES_DB
-        'USER': 'inove_user',      # POSTGRES_USER
-        'PASSWORD': '123Marvel!',  # POSTGRES_PASSWORD
-        'HOST': 'db',                # Nombre del servicio
+        'USER' : 'inove_user',      # POSTGRES_USER
+        'PASSWORD' : '123Marvel!',  # POSTGRES_PASSWORD
+        'HOST':'db',                # Nombre del servicio
         'PORT': '5432'              # Número del puerto
     }
 }
@@ -167,6 +218,41 @@ VERDE = "\033[;32m"
 # NOTE: Para manejo de sesión.
 LOGIN_REDIRECT_URL = '/e-commerce/index'
 LOGIN_URL = '/e-commerce/'
+
+# API DOCS Settings:
+# https://drf-yasg.readthedocs.io/en/stable/settings.html
+LOGOUT_URL = '/admin/logout'
+
+# Acá van todas las configuraciones para la UI de Swagger.
+SWAGGER_SETTINGS = {
+    'DEFAULT_MODEL_RENDERING': "example",
+    # Seteo los tipos de Authenticaciones que puedo utilizar en
+    # Swagger.
+    # https://drf-yasg.readthedocs.io/en/stable/settings.html#security-definitions-settings
+    'SECURITY_DEFINITIONS': {
+        # HTTP Basic Authentication:
+        'basic': {
+            'description': "Basic Auth",
+            'type': 'basic',
+            'in': 'header'
+        },
+        # Token Authentication:
+        'DRF Token': {
+            'description': '**Ejemplo: Token ea0dfcbbdff1a55ae26a67cd71bcc6adffb1f200**',
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+         }
+    },
+    "USE_SESSION_AUTH": True,
+    'LOGIN_URL': LOGIN_URL,
+    'LOGOUT_URL': LOGOUT_URL
+}
+
+# Acá van todas las configuraciones para la UI de Redoc.
+REDOC_SETTINGS = {
+   'LAZY_RENDERING': False,
+}
 
 # NOTE: Logging settings
 
@@ -331,31 +417,34 @@ COMPLEX_LOGGING = {
 # NOTE: Ejemplo de aplicación en API Test logging.
 LOGGING = SIMPLE_LOGGING # COMPLEX_LOGGING
 
+# Usamos las credenciales dadas por mailtrap.
+# https://mailtrap.io/home
 
+EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
+EMAIL_PORT = '2525'
+EMAIL_HOST_USER = '8067b05e83ac6d'
+EMAIL_HOST_PASSWORD = '3101868e196d83'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+DEFAULT_FROM_EMAIL = 'InoveDjango Service <send.email.djangoservice@gmail.com>'
 EMAIL_USE_TLS = True
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587    # 465
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 
 
-CELERY_BROKER_URL = 'redis://redis:6379'
-CELERY_RESULT_BACKEND = 'redis://redis:6379'
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'America/Argentina/Buenos_Aires'
 
+# https://docs.celeryq.dev/en/stable/userguide/periodic-tasks.html#crontab-schedules
 CELERY_BEAT_SCHEDULE = {
     'hello': {
-        'task': 'e_commerce.tasks.hello_world',
-        'schedule': crontab(minute='*/2')  # Cada 2 minutos ejecutar
+        'task': 'e_commerce.tasks.hello_world_task',
+        'schedule': crontab(minute='*/2')  # Cada 2 minutos se ejecuta
     },
     'segunda_tarea': {
-        'task': 'e_commerce.tasks.segunda_tarea',
-        'schedule': crontab(minute='*/60')  # Cada 60 minutos ejecutar
+        'task': 'e_commerce.tasks.periodic_send_email_task',
+        'schedule': crontab(minute='*/30')  # Cada 30 minutos se ejecuta
     }
 }
 
