@@ -4,16 +4,17 @@ django-filter==2.4.0
 djangorestframework==3.12.4
 django-rest-auth==0.9.5
 # Swagger:
-uritemplate==3.0.1
-pyyaml==5.4.1
-# Drivers para trabajar con Postgres en linux:
+drf-yasg==1.21.0
+# Adaptador de la base de datos relacional PostgreSQL para Python.
 psycopg2-binary>=2.8
+# Toolkit que permite aprovechar al máximo el uso interactivo de Python.
+# Muy útil cuando utilizemos el shell de Django.
+ipython==8.8.0
+#####
+django-cors-headers==3.14.0
 # Graficos:
 plotly==5.3.1
 # Tareas asincrónicas:
 celery==5.1
 redis==4.3.4
-# Google API:
-google-api-python-client==2.19.1
-google-auth-httplib2==0.1.0
-google-auth-oauthlib==0.4.6
+flower==1.2.0
